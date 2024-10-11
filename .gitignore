@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.env
+instance/
+.venv/
+venv/
+env/
+
+
+
+
+# Node (adjust to not ignore the folder itself)
+!mychurchrecords-frontend/
+mychurchrecords-frontend/node_modules/
+mychurchrecords-frontend/.env
+mychurchrecords-frontend/.next/
+mychurchrecords-frontend/dist/
+mychurchrecords-frontend/build/
