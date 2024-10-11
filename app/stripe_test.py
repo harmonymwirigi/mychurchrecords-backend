@@ -47,6 +47,7 @@ def main():
     # Step 1: Create a charge of $5.00 (500 cents) with authorization only
     amount_in_cents = 500
     currency = "usd"
+    
     charge_id = create_charge_for_connected_account(amount_in_cents, currency, connected_account_id)
     
     # Step 2: Capture the charge if it was successfully created
