@@ -6,7 +6,6 @@ function DashboardComponent() {
     const [attendanceData, setAttendanceData] = useState([]);
     const [donationData, setDonationData] = useState([]);
     const [formData, setFormData] = useState({
-        member_id: '',
         meeting_date: '',
         amount: '',
         donation_date: ''
@@ -59,7 +58,6 @@ function DashboardComponent() {
         e.preventDefault();
         try {
             await axios.post('http://localhost:5000/api/attendance', {
-                member_id: formData.member_id,
                 meeting_date: formData.meeting_date
             });
             alert('Attendance record added successfully');
@@ -74,7 +72,6 @@ function DashboardComponent() {
         e.preventDefault();
         try {
             await axios.post('http://localhost:5000/api/donation', {
-                member_id: formData.member_id,
                 amount: formData.amount,
                 date: formData.donation_date
             });
@@ -102,18 +99,6 @@ function DashboardComponent() {
                         <div className="card-body">
                             <form onSubmit={handleAttendanceSubmit}>
                                 <div className="mb-3">
-                                    <label className="form-label">Member ID</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        name="member_id"
-                                        placeholder="Member ID"
-                                        value={formData.member_id}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="mb-3">
                                     <label className="form-label">Meeting Date</label>
                                     <input
                                         type="date"
@@ -138,18 +123,6 @@ function DashboardComponent() {
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleDonationSubmit}>
-                                <div className="mb-3">
-                                    <label className="form-label">Member ID</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        name="member_id"
-                                        placeholder="Member ID"
-                                        value={formData.member_id}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
                                 <div className="mb-3">
                                     <label className="form-label">Amount</label>
                                     <input
@@ -186,7 +159,6 @@ function DashboardComponent() {
                 <thead className="thead-dark">
                     <tr>
                         <th>ID</th>
-                        <th>Member ID</th>
                         <th>Meeting Date</th>
                     </tr>
                 </thead>
@@ -194,7 +166,6 @@ function DashboardComponent() {
                     {attendanceData.map((record) => (
                         <tr key={record.id}>
                             <td>{record.id}</td>
-                            <td>{record.member_id}</td>
                             <td>{record.meeting_date}</td>
                         </tr>
                     ))}
@@ -207,7 +178,6 @@ function DashboardComponent() {
                 <thead className="thead-dark">
                     <tr>
                         <th>ID</th>
-                        <th>Member ID</th>
                         <th>Amount</th>
                         <th>Date</th>
                     </tr>
@@ -216,7 +186,6 @@ function DashboardComponent() {
                     {donationData.map((record) => (
                         <tr key={record.id}>
                             <td>{record.id}</td>
-                            <td>{record.member_id}</td>
                             <td>{record.amount}</td>
                             <td>{record.date}</td>
                         </tr>

@@ -14,6 +14,9 @@ class Church(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(128), nullable=False)  # Password field
     payments = db.relationship('Payment', backref='church', lazy=True)
+    
+    def __repr__(self):
+        return f"{self.name}"
 
     # Method to set the password
     def set_password(self, password):
@@ -27,6 +30,7 @@ class Church(db.Model):
     
 class ChurchMember(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     nickname = db.Column(db.String(50))
@@ -41,14 +45,18 @@ class ChurchMember(db.Model):
 
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    member_id = db.Column(db.Integer, db.ForeignKey('church_member.id'), nullable=False)
+    church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
+    church = db.relationship('Church', backref='attendances', lazy=True)  # Add this relationship
     meeting_date = db.Column(db.Date)
+
 
 class Donation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    member_id = db.Column(db.Integer, db.ForeignKey('church_member.id'), nullable=False)
+    church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
+    church = db.relationship('Church', backref='donations', lazy=True)  # Add this relationship
     date = db.Column(db.Date)
     amount = db.Column(db.Float)
+
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -60,5 +68,12 @@ class AdminUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    password_hash = db.Column(db.String(100))
     phone = db.Column(db.String(20))
+    # Method to set the password
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    # Method to check the password
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)

@@ -1,4 +1,3 @@
-// mychurchrecords-frontend/src/components/MeetingList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +43,8 @@ function MeetingList() {
                     <thead className="thead-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Member ID</th>
+                            <th>Church ID</th>
+                            <th>Church Name</th> {/* Optionally display church name */}
                             <th>Meeting Date</th>
                         </tr>
                     </thead>
@@ -52,7 +52,8 @@ function MeetingList() {
                         {meetingData.map((meeting) => (
                             <tr key={meeting.id}>
                                 <td>{meeting.id}</td>
-                                <td>{meeting.member_id}</td>
+                                <td>{meeting.church_id}</td>
+                                <td>{meeting.church_name}</td> {/* Optionally display church name */}
                                 <td>{meeting.meeting_date}</td>
                             </tr>
                         ))}

@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import { useNavigate } from 'react-router-dom';
 
 function LoginForm() {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
-
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
@@ -28,19 +20,20 @@ function LoginForm() {
         try {
             const response = await axios.post('http://localhost:5000/api/login', formData);
 
-            // Handle successful login, save the token
+            // Save access token and user type to local storage
             localStorage.setItem('access_token', response.data.access_token);
+            localStorage.setItem('user_type', response.data.user_type); // Save user type
 
-            // Redirect to dashboard after successful login
-            navigate('/dashboard');
+            // Redirect based on user type
+            if (response.data.user_type === 'admin') {
+                navigate('/admin-page');
+            } else {
+                navigate('/dashboard');
+            }
 
         } catch (error) {
             setLoading(false);
-            if (error.response && error.response.data.error) {
-                setError(error.response.data.error);
-            } else {
-                setError('There was an error logging in.');
-            }
+            setError(error.response?.data?.error || 'There was an error logging in.');
         }
     };
 

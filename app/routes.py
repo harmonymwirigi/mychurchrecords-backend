@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, url_for
-from .models import db, Church, AdminUser, Donation, Attendance
+from .models import db, Church, AdminUser, Donation, Attendance,ChurchMember
 from datetime import datetime
 from flask_mail import Message
 from . import mail
@@ -11,6 +11,7 @@ from flask import redirect
 from flask import request, jsonify
 from werkzeug.security import check_password_hash,generate_password_hash
 from flask_jwt_extended import create_access_token, JWTManager
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 main = Blueprint('main', __name__)
 
@@ -69,6 +70,25 @@ def create_paypal_order():
             return link['href']
 
     raise Exception("No approval link found in PayPal order response")
+
+def create_admin_user(name, email, password, phone):
+    # Check if an admin already exists
+    existing_admin = AdminUser.query.first()
+    if existing_admin:
+        print("An admin user already exists. Only one admin user is allowed.")
+        return
+
+    # Create new admin user
+    admin = AdminUser(
+        name=name,
+        email=email,
+        password=generate_password_hash(password),  # Ensure password is hashed
+        phone=phone
+    )
+    db.session.add(admin)
+    db.session.commit()
+    print("Admin user created successfully.")
+    
 @main.route('/api/churches', methods=['POST'])
 def create_church():
     data = request.json
@@ -187,8 +207,13 @@ def login():
     email = data['email']
     password = data['password']
 
-    # Find user by email (you can check Church or AdminUser based on your structure)
-    user = AdminUser.query.filter_by(email=email).first() or Church.query.filter_by(email=email).first()
+    # Find user by email (check AdminUser first, then Church)
+    user = AdminUser.query.filter_by(email=email).first()
+    user_type = 'admin'
+
+    if not user:
+        user = Church.query.filter_by(email=email).first()
+        user_type = 'church'
 
     if not user:
         return jsonify({"error": "Invalid email or password"}), 401
@@ -197,12 +222,13 @@ def login():
     if not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid email or password"}), 401
 
-    # If credentials are correct, generate a JWT token
-    access_token = create_access_token(identity={'email': user.email})
+    # Generate a JWT token with just the email
+    access_token = create_access_token(identity=user.email)
 
     return jsonify({
         "message": "Login successful",
-        "access_token": access_token
+        "access_token": access_token,
+        "user_type": user_type  # Return the user type
     }), 200
 
 
@@ -213,7 +239,88 @@ def create_tables():
 
 # You can similarly define routes for members, attendance, donations, and admin functionality
 
+@main.route('/api/members', methods=['POST'])
+@jwt_required()
+def create_member():
+    data = request.json
+
+    # Retrieve the logged-in church's identity
+    church_email = get_jwt_identity()
+    church = Church.query.filter_by(email=church_email).first()
+
+    if not church:
+        return jsonify({"error": "Church not found"}), 404
+
+    # Extract member data from the request
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    phone = data.get('phone')
+    dob = data.get('dob')
+    first_time_at_church = data.get('first_time_at_church')
+
+    # Check for required fields
+    if not first_name or not last_name:
+        return jsonify({"error": "First and last name are required"}), 400
+
+    # Create new ChurchMember record
+    try:
+        member = ChurchMember(
+            church_id=church.id,
+            first_name=first_name,
+            last_name=last_name,
+            nickname=data.get('nickname'),
+            email=email,
+            phone=phone,
+            address=data.get('address'),
+            city=data.get('city'),
+            state=data.get('state'),
+            country=data.get('country'),
+            dob=datetime.strptime(dob, '%Y-%m-%d').date() if dob else None,
+            first_time_at_church=datetime.strptime(first_time_at_church, '%Y-%m-%d').date() if first_time_at_church else None
+        )
+
+        db.session.add(member)
+        db.session.commit()
+
+        return jsonify({"message": "Member added successfully", "member_id": member.id}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@main.route('/api/members', methods=['GET'])
+@jwt_required()
+def get_members():
+    # Retrieve the logged-in church's identity
+    church_email = get_jwt_identity()
+    church = Church.query.filter_by(email=church_email).first()
+
+    if not church:
+        return jsonify({"error": "Church not found"}), 404
+
+    # Get all members associated with the logged-in church
+    members = ChurchMember.query.filter_by(church_id=church.id).all()
+
+    result = [{
+        "id": member.id,
+        "first_name": member.first_name,
+        "last_name": member.last_name,
+        "nickname": member.nickname,
+        "email": member.email,
+        "phone": member.phone,
+        "address": member.address,
+        "city": member.city,
+        "state": member.state,
+        "country": member.country,
+        "dob": member.dob.strftime('%Y-%m-%d') if member.dob else None,
+        "first_time_at_church": member.first_time_at_church.strftime('%Y-%m-%d') if member.first_time_at_church else None
+    } for member in members]
+
+    return jsonify(result), 200
+
 @main.route('/api/admin/churches', methods=['GET'])
+@jwt_required()
 def get_all_churches():
     churches = Church.query.all()
     church_list = [{
@@ -235,8 +342,9 @@ def get_all_donations():
     donations = Donation.query.all()
     donation_list = [{
         "id": donation.id,
-        "member_id": donation.member_id,
-        "date": donation.date,
+        "church_id": donation.church_id,  # Correct reference to church_id
+        "church_name": donation.church.name,  # Access the related church's name
+        "date": donation.date.strftime('%Y-%m-%d'),
         "amount": donation.amount
     } for donation in donations]
     return jsonify(donation_list), 200
@@ -246,8 +354,10 @@ def get_all_meetings():
     meetings = Attendance.query.all()
     meeting_list = [{
         "id": meeting.id,
-        "member_id": meeting.member_id,
-        "meeting_date": meeting.meeting_date
+        "church_id": meeting.church_id,  # Now correctly references church_id
+        "church_name": meeting.church.name,  # Access the related church's name
+        "meeting_date": meeting.meeting_date.strftime('%Y-%m-%d')
     } for meeting in meetings]
     return jsonify(meeting_list), 200
+
 

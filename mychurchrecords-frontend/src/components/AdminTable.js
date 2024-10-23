@@ -28,7 +28,8 @@ const AdminTable = ({ data, type }) => {
                 return (
                     <tr>
                         <th>ID</th>
-                        <th>Member ID</th>
+                        <th>Church ID</th>
+                        <th>Church Name</th> {/* Optionally add church name */}
                         <th>Date</th>
                         <th>Amount</th>
                     </tr>
@@ -37,7 +38,8 @@ const AdminTable = ({ data, type }) => {
                 return (
                     <tr>
                         <th>ID</th>
-                        <th>Member ID</th>
+                        <th>Church ID</th>
+                        <th>Church Name</th> {/* Optionally add church name */}
                         <th>Meeting Date</th>
                     </tr>
                 );
@@ -66,7 +68,8 @@ const AdminTable = ({ data, type }) => {
                     return (
                         <tr key={index}>
                             <td>{item.id}</td>
-                            <td>{item.member_id}</td>
+                            <td>{item.church_id}</td>
+                            <td>{item.church_name}</td> {/* Add church name if available */}
                             <td>{item.date}</td>
                             <td>{item.amount}</td>
                         </tr>
@@ -75,7 +78,8 @@ const AdminTable = ({ data, type }) => {
                     return (
                         <tr key={index}>
                             <td>{item.id}</td>
-                            <td>{item.member_id}</td>
+                            <td>{item.church_id}</td>
+                            <td>{item.church_name}</td> {/* Add church name if available */}
                             <td>{item.meeting_date}</td>
                         </tr>
                     );

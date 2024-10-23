@@ -1,4 +1,3 @@
-// mychurchrecords-frontend/src/components/DonationList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +44,8 @@ function DonationList() {
                     <thead className="thead-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Member ID</th>
+                            <th>Church ID</th>
+                            <th>Church Name</th> {/* Optionally display church name */}
                             <th>Amount</th>
                             <th>Date</th>
                         </tr>
@@ -54,7 +54,8 @@ function DonationList() {
                         {donationData.map((record) => (
                             <tr key={record.id}>
                                 <td>{record.id}</td>
-                                <td>{record.member_id}</td>
+                                <td>{record.church_id}</td>
+                                <td>{record.church_name}</td> {/* Optionally display church name */}
                                 <td>{record.amount}</td>
                                 <td>{record.date}</td>
                             </tr>
