@@ -1,7 +1,10 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 class Church(db.Model):
+    __tablename__ = 'church'
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     pastor_name = db.Column(db.String(100))
@@ -10,13 +13,18 @@ class Church(db.Model):
     location_country = db.Column(db.String(100))
     email = db.Column(db.String(100), unique=True, nullable=False)
     phone = db.Column(db.String(20))
-    subscription_start = db.Column(db.DateTime)
+    subscription_start = db.Column(db.DateTime, default=datetime.utcnow)
     is_verified = db.Column(db.Boolean, default=False)
     password_hash = db.Column(db.String(128), nullable=False)  # Password field
-    payments = db.relationship('Payment', backref='church', lazy=True)
     
+    # Relationships
+    payments = db.relationship('Payment', backref='church', lazy='dynamic')
+    donations = db.relationship('Donation', backref='church', lazy='dynamic')
+    attendances = db.relationship('Attendance', backref='church', lazy='dynamic')
+    members = db.relationship('ChurchMember', backref='church', lazy='dynamic')
+
     def __repr__(self):
-        return f"{self.name}"
+        return f"<Church {self.name}>"
 
     # Method to set the password
     def set_password(self, password):
@@ -26,9 +34,10 @@ class Church(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    
-    
+
 class ChurchMember(db.Model):
+    __tablename__ = 'church_member'
+    
     id = db.Column(db.Integer, primary_key=True)
     church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
@@ -43,33 +52,57 @@ class ChurchMember(db.Model):
     dob = db.Column(db.Date)
     first_time_at_church = db.Column(db.Date)
 
+    def __repr__(self):
+        return f"<ChurchMember {self.first_name} {self.last_name}>"
+
+
 class Attendance(db.Model):
+    __tablename__ = 'attendance'
+    
     id = db.Column(db.Integer, primary_key=True)
     church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
-    church = db.relationship('Church', backref='attendances', lazy=True)  # Add this relationship
-    meeting_date = db.Column(db.Date)
+    meeting_date = db.Column(db.Date, nullable=False)
+
+    def __repr__(self):
+        return f"<Attendance {self.meeting_date} for Church ID {self.church_id}>"
 
 
 class Donation(db.Model):
+    __tablename__ = 'donation'
+    
     id = db.Column(db.Integer, primary_key=True)
     church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
-    church = db.relationship('Church', backref='donations', lazy=True)  # Add this relationship
-    date = db.Column(db.Date)
-    amount = db.Column(db.Float)
+    date = db.Column(db.Date, default=datetime.utcnow)
+    amount = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f"<Donation {self.amount} on {self.date} for Church ID {self.church_id}>"
 
 
 class Payment(db.Model):
+    __tablename__ = 'payment'
+    
     id = db.Column(db.Integer, primary_key=True)
     church_id = db.Column(db.Integer, db.ForeignKey('church.id'), nullable=False)
-    amount = db.Column(db.Float)
-    payment_date = db.Column(db.DateTime)
+    amount = db.Column(db.Float, nullable=False)
+    payment_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Payment {self.amount} on {self.payment_date} for Church ID {self.church_id}>"
+
 
 class AdminUser(db.Model):
+    __tablename__ = 'admin_user'
+    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    email = db.Column(db.String(100), unique=True)
-    password_hash = db.Column(db.String(100))
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
     phone = db.Column(db.String(20))
+
+    def __repr__(self):
+        return f"<AdminUser {self.name}>"
+
     # Method to set the password
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
