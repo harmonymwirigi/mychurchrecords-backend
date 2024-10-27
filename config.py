@@ -4,6 +4,10 @@ from dotenv import load_dotenv
 # Load environment variables from the .env file
 load_dotenv()
 
+#^[pwgBt}a)$r
+# johngilb_harmony
+# database - johngilb_harmonytest
+
 class Config:
     # Flask configuration
     SECRET_KEY = os.getenv('SECRET_KEY', 'defaultsecretkey')  # Default key if none in .env
@@ -11,7 +15,8 @@ class Config:
     # Database configuration
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///mydatabase.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+    
+    print(SQLALCHEMY_DATABASE_URI)
     # Email configuration (for Flask-Mail)
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 587))  # Default to port 587 (TLS)
