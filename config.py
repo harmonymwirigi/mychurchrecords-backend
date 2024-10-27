@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-
+basedir = os.path.abspath(os.path.dirname(__file__))
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -13,7 +13,7 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'defaultsecretkey')  # Default key if none in .env
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///mydatabase.db')
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', f'sqlite:///{os.path.join(basedir, "churchrecords.db")}')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     print(SQLALCHEMY_DATABASE_URI)
