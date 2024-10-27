@@ -15,10 +15,10 @@ mail = Mail()  # Initialize Flask-Mail instance here, but not tied to the app ye
 
 def create_app():
     app = Flask(__name__)
-    
     app.config.from_object(Config)
     jwt = JWTManager(app)
     CORS(app)
+    
     # Initialize SQLAlchemy and Flask-Mail with the app
     db.init_app(app)
     mail.init_app(app)
@@ -30,15 +30,13 @@ def create_app():
     
     app.register_blueprint(main)
     app.register_blueprint(dashboard)
-    
 
-
-    # Create database tables (optional)
-    @app.before_request
-    def create_tables():
+    # Explicitly create tables with app context
+    with app.app_context():
         db.create_all()
 
     return app
+
 
 # Define CLI commands
 def init_cli_commands(app):
