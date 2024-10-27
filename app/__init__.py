@@ -31,9 +31,7 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(dashboard)
 
-    # Explicitly create tables with app context
-    with app.app_context():
-        db.create_all()
+    
 
     return app
 
