@@ -231,11 +231,40 @@ def login():
         "user_type": user_type  # Return the user type
     }), 200
 
+@main.route('/api/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    
+    # Get user data from the request
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    phone = data.get('phone')
+
+    # Check if email already exists
+    existing_admin = AdminUser.query.filter_by(email=email).first()
+    if existing_admin:
+        return jsonify({"error": "Email already registered."}), 400
+
+    # Create a new AdminUser instance
+    new_admin = AdminUser(
+        name=name,
+        email=email,
+        phone=phone
+    )
+    new_admin.set_password(password)  # Hash the password
+
+    # Add the new admin to the database
+    try:
+        db.session.add(new_admin)
+        db.session.commit()
+        return jsonify({"message": "Admin user created successfully."}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to create admin user."}), 500
 
 
-@main.before_app_request
-def create_tables():
-    db.create_all()
+
 
 # You can similarly define routes for members, attendance, donations, and admin functionality
 
