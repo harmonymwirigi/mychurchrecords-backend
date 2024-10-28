@@ -16,7 +16,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', f'sqlite:///{os.path.join(basedir, "churchrecords.db")}')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    print(SQLALCHEMY_DATABASE_URI)
+    
     # Email configuration (for Flask-Mail)
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.getenv('MAIL_PORT', 587))  # Default to port 587 (TLS)
