@@ -32,8 +32,8 @@ def create_app():
     app.register_blueprint(dashboard)
 
     # Create tables and ensure admin user is created on app startup
-    with app.app_context():
-        initialize_database()
+    # with app.app_context():
+    #     initialize_database()
 
     return app
 
