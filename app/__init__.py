@@ -70,10 +70,7 @@ def init_cli_commands(app):
     # Admin CLI group
     admin_cli = AppGroup('admin')
 
-    @admin_cli.command('create')
-    def create_admin():
-        # Function to create the admin user
-        create_admin_user(name="Admin", email="admin@churchrecord.us", password="adminpassword", phone="1234567890")
+    
 
     # Register the CLI command group to the app
     app.cli.add_command(admin_cli)
@@ -86,24 +83,3 @@ def init_cli_commands(app):
             db.create_all()
             print("Database initialized successfully.")
 
-def create_admin_user(name, email, password, phone):
-    # Implementation of the admin user creation logic
-    from .models import AdminUser
-    from werkzeug.security import generate_password_hash
-    from . import db
-
-    # Check if an admin already exists
-    if AdminUser.query.first():
-        print("An admin user already exists. Only one admin user is allowed.")
-        return
-
-    # Create the admin user
-    admin = AdminUser(
-        name=name,
-        email=email,
-        password_hash=generate_password_hash(password),
-        phone=phone
-    )
-    db.session.add(admin)
-    db.session.commit()
-    print("Admin user created successfully.")
