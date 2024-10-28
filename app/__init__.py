@@ -37,8 +37,33 @@ def create_app():
     
     app.register_blueprint(main)
     app.register_blueprint(dashboard)
-    
+
+    # Create database tables and ensure admin user is created
+    with app.app_context():
+        db.create_all()  # Create tables if they don't exist
+        create_admin_user_once()  # Ensure the admin user is created once
+
     return app
+
+def create_admin_user_once():
+    """Create an admin user if one does not already exist."""
+    from .models import AdminUser
+    from werkzeug.security import generate_password_hash
+
+    # Check if an admin already exists
+    if not AdminUser.query.first():
+        # Create the admin user if none exists
+        admin = AdminUser(
+            name="Admin",
+            email="admin@churchrecord.us",
+            password_hash=generate_password_hash("adminpassword"),
+            phone="1234567890"
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("Admin user created successfully.")
+    else:
+        print("Admin user already exists.")
 
 # Define CLI commands
 def init_cli_commands(app):
